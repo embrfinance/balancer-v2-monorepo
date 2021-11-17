@@ -590,7 +590,11 @@ contract MultiDistributor is IMultiDistributor, ReentrancyGuard, MultiDistributo
     function _updateUserTokensPerStake(UserStaking storage userStaking, bytes32 distributionId) internal {
         uint256 updatedGlobalTokensPerStake = _updateDistributionRate(distributionId);
         UserDistribution storage userDistribution = userStaking.distributions[distributionId];
-        userDistribution.unclaimedTokens = _getUnclaimedTokens(userStaking, distributionId);
+        userDistribution.unclaimedTokens = _getUnclaimedTokens(
+            userStaking,
+            distributionId,
+            updatedGlobalTokensPerStake
+        );
         userDistribution.userTokensPerStake = updatedGlobalTokensPerStake;
     }
 
@@ -628,14 +632,16 @@ contract MultiDistributor is IMultiDistributor, ReentrancyGuard, MultiDistributo
      * @dev Returns the total unclaimed tokens for a user for a particular distribution
      * @param userStaking Storage pointer to user's staked position information
      * @param distributionId ID of the distribution being queried
+     * @param updatedGlobalTokensPerStake The updated number of distribution tokens paid per staked token
      */
-    function _getUnclaimedTokens(UserStaking storage userStaking, bytes32 distributionId)
-        internal
-        view
-        returns (uint256)
-    {
+    function _getUnclaimedTokens(
+        UserStaking storage userStaking,
+        bytes32 distributionId,
+        uint256 updatedGlobalTokensPerStake
+    ) internal view returns (uint256) {
         uint256 unclaimedTokens = userStaking.distributions[distributionId].unclaimedTokens;
-        return _unaccountedUnclaimedTokens(userStaking, distributionId).add(unclaimedTokens);
+        return
+            _unaccountedUnclaimedTokens(userStaking, distributionId, updatedGlobalTokensPerStake).add(unclaimedTokens);
     }
 
     /**
@@ -643,12 +649,13 @@ contract MultiDistributor is IMultiDistributor, ReentrancyGuard, MultiDistributo
      *      the last time the user updated their position and now
      * @param userStaking Storage pointer to user's staked position information
      * @param distributionId ID of the distribution being queried
+     * @param updatedGlobalTokensPerStake The updated number of distribution tokens paid per staked token
      */
-    function _unaccountedUnclaimedTokens(UserStaking storage userStaking, bytes32 distributionId)
-        internal
-        view
-        returns (uint256)
-    {
+    function _unaccountedUnclaimedTokens(
+        UserStaking storage userStaking,
+        bytes32 distributionId,
+        uint256 updatedGlobalTokensPerStake
+    ) internal view returns (uint256) {
         // If the user is not subscribed to the queried distribution, it should be handled as if the user has no stake.
         // Then, it can be short cut to zero.
         if (!userStaking.subscribedDistributions.contains(distributionId)) {
@@ -656,10 +663,8 @@ contract MultiDistributor is IMultiDistributor, ReentrancyGuard, MultiDistributo
         }
 
         uint256 userTokensPerStake = userStaking.distributions[distributionId].userTokensPerStake;
-        uint256 unaccountedPaymentPerToken = _globalTokensPerStake(_getDistribution(distributionId)).sub(
-            userTokensPerStake
-        );
-        return userStaking.balance.mulDown(unaccountedPaymentPerToken);
+        uint256 unaccountedTokensPerStake = updatedGlobalTokensPerStake.sub(userTokensPerStake);
+        return userStaking.balance.mulDown(unaccountedTokensPerStake);
     }
 
     function _getDistribution(
