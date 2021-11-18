@@ -424,10 +424,11 @@ contract MultiDistributor is IMultiDistributor, ReentrancyGuard, MultiDistributo
     ) public override nonReentrant {
         require(amount > 0, "UNSTAKE_AMOUNT_ZERO");
 
-        // Before we reduce the user's staked balance we need to update all of their subscriptions
-        _updateSubscribedDistributions(stakingToken, msg.sender);
-
         UserStaking storage userStaking = _userStakings[stakingToken][msg.sender];
+
+        // Before we reduce the user's staked balance we need to update all of their subscriptions
+        _updateSubscribedDistributions(userStaking);
+
         uint256 currentBalance = userStaking.balance;
         require(currentBalance >= amount, "UNSTAKE_AMOUNT_UNAVAILABLE");
         userStaking.balance -= currentBalance;
@@ -524,10 +525,11 @@ contract MultiDistributor is IMultiDistributor, ReentrancyGuard, MultiDistributo
     ) internal {
         require(amount > 0, "STAKE_AMOUNT_ZERO");
 
-        // Before we increase the user's staked balance we need to update all of their subscriptions
-        _updateSubscribedDistributions(stakingToken, user);
-
         UserStaking storage userStaking = _userStakings[stakingToken][user];
+
+        // Before we increase the user's staked balance we need to update all of their subscriptions
+        _updateSubscribedDistributions(userStaking);
+
         userStaking.balance = userStaking.balance.add(amount);
 
         EnumerableSet.Bytes32Set storage distributions = userStaking.subscribedDistributions;
@@ -589,8 +591,7 @@ contract MultiDistributor is IMultiDistributor, ReentrancyGuard, MultiDistributo
     /**
      * @dev Updates the payment rate for all the distributions that a user has signed up for a staking token
      */
-    function _updateSubscribedDistributions(IERC20 stakingToken, address user) internal {
-        UserStaking storage userStaking = _userStakings[stakingToken][user];
+    function _updateSubscribedDistributions(UserStaking storage userStaking) internal {
         EnumerableSet.Bytes32Set storage distributions = userStaking.subscribedDistributions;
         uint256 distributionsLength = distributions.length();
 
