@@ -431,7 +431,7 @@ contract MultiDistributor is IMultiDistributor, ReentrancyGuard, MultiDistributo
 
         uint256 currentBalance = userStaking.balance;
         require(currentBalance >= amount, "UNSTAKE_AMOUNT_UNAVAILABLE");
-        userStaking.balance -= currentBalance;
+        userStaking.balance -= amount;
 
         EnumerableSet.Bytes32Set storage distributions = userStaking.subscribedDistributions;
         uint256 distributionsLength = distributions.length();
