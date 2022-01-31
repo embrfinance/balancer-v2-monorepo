@@ -24,4 +24,10 @@ export default {
   arbitrum: {
     admin: '0x6207ed574152496c9B072C24FD87cE9cd9E17320',
   },
+  fuji: { 
+    admin: '0xFEb06159e2d3AC37f8B5c609A04B94dc6E11982f',
+  },
+  avalanche: { 
+    admin: '0x467B46997B0Dd2376A9A1Dd805d1458C29274f74',
+  }
 };

@@ -53,4 +53,16 @@ export default {
     pauseWindowDuration: 3 * MONTH,
     bufferPeriodDuration: MONTH,
   },
+  fuji: {
+    Authorizer,
+    weth: '0xd00ae08403B9bbb9124bB305C09058E32C39A48c',
+    pauseWindowDuration: 3 * MONTH,
+    bufferPeriodDuration: MONTH,
+  },
+  avalanche: {
+    Authorizer,
+    weth: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7',
+    pauseWindowDuration: 3 * MONTH,
+    bufferPeriodDuration: MONTH,
+  },
 };
